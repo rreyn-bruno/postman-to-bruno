@@ -1,0 +1,50 @@
+meta {
+  name: Partially updates information for a managed account
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/v3/customer/managed-accounts/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: {{managed_path_account_id}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Prefer: views=process_view
+  ~Prefer: return=minimal
+  ~Prefer: return=representation
+  ~Prefer: return=representation, views=process_view
+}
+
+body:json {
+  [
+      {
+          "op": "add",
+          "path": "/attributes",
+          "value": [
+              {
+                  "name": "SELF_CERTIFICATION",
+                  "value": "true"
+              }
+          ]
+      }
+  ]
+  
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Partially updates information for a managed account, by account ID. For information about the paths where you can replace, add, or delete information.
+  
+  The fields and endpoint description can be found on PayPal Developer Portal under [Managed Accounts](https://developer.paypal.com/api/limited-release/managed-accounts/v3/#managed-accounts_patch).
+}

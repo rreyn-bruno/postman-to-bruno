@@ -1,0 +1,109 @@
+meta {
+  name: Trigger a sample event
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{base_url}}/v1/catalogs/products
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+body:json {
+  {
+      "id": "evnt_{{$timestamp}}",
+      "name": "Soccer Event"
+  }
+}
+
+script:post-response {
+  // import functions from collection variables
+  eval(bru.getVar("paypal_postman_scripts"));
+  
+  if(this.PayPalPostmanUtils.isSandbox() && bru.getVar("webhook_site_token") !== "") { 
+      test("event must be sent", function() {
+          var jsonData = res.getBody();
+          expect(jsonData).to.have.property('id');
+          console.log("triggered event id",jsonData.id);
+  
+          bru.deleteVar("event_transmission_id");
+          bru.deleteVar("event_transmission_time");
+          bru.deleteVar("event_cert_url");
+          bru.deleteVar("event_auth_algo");
+          bru.deleteVar("event_transmission_sig");
+          bru.deleteVar("event_webhook_payload");
+  
+          // now look for this event to get delivered on the registered webhook url
+          fetchEvents(10, 20000, jsonData.id, function(isReceived) {
+              test("event must be received, id="+jsonData.id, function() {
+                  if(!isReceived) {
+                      var webhooksView = "https://webhook.site/#!/view/"+bru.getVar("webhook_site_token");
+                      console.warn("Failed to receive webhook event at ", webhooksView, " in time. Skipping validation");
+  //                     pm.execution.setNextRequest("Resend event notification");
+                  }
+                  expect(true).to.equal(isReceived);
+              });
+          });
+      });
+  }
+  function fetchEvents(retry, sleep, eventId, callback) {
+      if(retry == 0) {
+         return callback(false);
+      }
+      // Retrieve recent events from webhook endpoint
+      console.log(`Retrieving last 5 events from webhook site`)
+  //     pm.sendRequest("https://webhook.site/token/"+bru.getVar("webhook_site_token")+"/requests?sorting=newest&per_page=5", (error, response) => {
+          var event = extractEvent(response.json(), eventId);
+          if(event === undefined) {
+              // webhooks takes a while to get delivered and appear at requestbin
+              var webhooksView = "https://webhook.site/#!/view/"+bru.getVar("webhook_site_token");
+              console.log("Waiting additional ", sleep, "ms for event id=", eventId," to appear at... ", webhooksView);
+              setTimeout(function() {
+                  return fetchEvents(retry-1, sleep, eventId, callback);
+              }, sleep);
+          } else {
+              bru.setVar("event_transmission_id", event.headers["paypal-transmission-id"]);
+              bru.setVar("event_transmission_time", event.headers["paypal-transmission-time"]);
+              bru.setVar("event_cert_url", event.headers["paypal-cert-url"]);
+              bru.setVar("event_auth_algo", event.headers["paypal-auth-algo"]);
+              bru.setVar("event_transmission_sig", event.headers["paypal-transmission-sig"]);
+              bru.setVar("event_webhook_payload", event.content);
+              return callback(true);
+          }
+      });
+  }
+  
+  function extractEvent(jsonData, eventId) {
+      if(jsonData.data && jsonData.data.length > 0) {
+          console.log(`fetched last '${jsonData.data.length}' events from webhook site`)
+          for(var eventIndex = jsonData.data.length-1; eventIndex>=0 ;eventIndex--) {
+              var event = jsonData.data[eventIndex];
+              var payload = event.content;
+              var payloadJson = JSON.parse(payload);
+              if(payloadJson.resource.id === eventId) {
+                  console.log(`Found event '${eventId}' in webhook site`)
+                  return event;
+              }
+          } 
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates a product.
+}

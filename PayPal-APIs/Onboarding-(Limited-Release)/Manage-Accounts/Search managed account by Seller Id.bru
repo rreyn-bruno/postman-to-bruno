@@ -1,0 +1,29 @@
+meta {
+  name: Search managed account by Seller Id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/v3/customer/managed-accounts/:id
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~views: process_view
+}
+
+params:path {
+  id: {{managed_path_account_id}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Shows details for a managed account, by account ID.
+  
+  The detailed description for the endpoint can be found on PayPal Developer Portal under [Managed Accounts](https://developer.paypal.com/api/limited-release/managed-accounts/v3/#managed-accounts_get).
+}

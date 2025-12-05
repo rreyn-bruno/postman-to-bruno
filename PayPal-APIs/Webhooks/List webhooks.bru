@@ -1,0 +1,24 @@
+meta {
+  name: List webhooks
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/v1/notifications/webhooks
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~anchor_type: APPLICATION
+  ~anchor_type: ACCOUNT
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Lists webhooks for an app.
+}

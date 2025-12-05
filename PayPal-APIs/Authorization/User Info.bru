@@ -1,0 +1,33 @@
+meta {
+  name: User Info
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/v1/identity/oauth2/userinfo?schema=paypalv1.1
+  body: none
+  auth: inherit
+}
+
+params:query {
+  schema: paypalv1.1
+}
+
+headers {
+  ~Content-Type: application/json
+  ~PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Shows user profile information. Filters the response by a schema. Supported schema value is `paypalv1.1`.
+}

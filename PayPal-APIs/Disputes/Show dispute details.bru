@@ -1,0 +1,28 @@
+meta {
+  name: Show dispute details
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/v1/customer/disputes/:dispute_id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  dispute_id: {{dispute_id}}
+}
+
+script:post-response {
+  // skipping over rest of the dispute APIs since they need a valid transaction and that is not available until buyer approval flow is completed.
+  // pm.execution.setNextRequest("Create managed account");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Shows details for a dispute, by ID.<blockquote><strong>Note:</strong> The fields that appear in the response depend on whether you access this call through first- or third-party access. For example, if the merchant shows dispute details through third-party access, the customer's email ID does not appear.</blockquote>
+}

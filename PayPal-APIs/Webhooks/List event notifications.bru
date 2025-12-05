@@ -1,0 +1,40 @@
+meta {
+  name: List event notifications
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/v1/notifications/webhooks-events
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~page_size: 10
+  ~start_time: 2022-02-01T00:00:00Z
+  ~end_time: 2022-03-01T00:00:00Z
+  ~transaction_id: {{capture_id}}
+  ~event_type: PAYMENT.CAPTURE.COMPLETED
+  ~move_to: next
+  ~offset: 10
+  ~prev_offset: 10
+  ~index_id: 1
+}
+
+script:post-response {
+  test("Extract resource_id", function() {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('events');
+      bru.setVar("event_id", jsonData.events[0].id);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Lists webhooks event notifications. Use query parameters to filter the response.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Escalate dispute to claim
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{base_url}}/v1/customer/disputes/:dispute_id/escalate
+  body: json
+  auth: inherit
+}
+
+params:path {
+  dispute_id: {{dispute_id}}
+}
+
+body:json {
+  {
+      "note": "Escalating to PayPal claim for resolution."
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Escalates the dispute, by ID, to a PayPal claim. To make this call, the stage in the dispute lifecycle must be `INQUIRY`.
+}

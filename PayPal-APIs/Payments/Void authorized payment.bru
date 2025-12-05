@@ -1,0 +1,34 @@
+meta {
+  name: Void authorized payment
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/v2/payments/authorizations/:authorization_id/void
+  body: none
+  auth: inherit
+}
+
+params:path {
+  authorization_id: {{authorization_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  Prefer: {{prefer_representation_detailed}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_minimal}}
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Voids, or cancels, an authorized payment, by ID. You cannot void an authorized payment that has been fully captured.
+}

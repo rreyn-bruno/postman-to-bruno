@@ -1,0 +1,34 @@
+meta {
+  name: Shows collection of registered wallet domains
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/v3/customer/managed-accounts/:id/wallet-domains
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: {{managed_path_account_id}}
+}
+
+script:post-response {
+  //Skipping calling next document upload API since lack of document file.
+  //Need to upload document from local directory then manually trigger it.
+  // pm.execution.setNextRequest("Create a setup token");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Shows collection of registered wallet domains
+  
+  > Please look at sample (`200 - Add Wallet Domain`) attached under Manage Accounts `PATCH Partially updates information for a managed account` API. 
+    
+  
+  The detailed description for the endpoint can be found on PayPal Developer Portal under [Managed Accounts](https://developer.paypal.com/api/limited-release/managed-accounts/v3/#managed-accounts_wallet-domains).
+}

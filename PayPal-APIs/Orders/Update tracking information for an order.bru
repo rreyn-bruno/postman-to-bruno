@@ -1,0 +1,46 @@
+meta {
+  name: Update tracking information for an order
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{base_url}}/v2/checkout/orders/:order_id/trackers/:tracking_id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  order_id: {{order_id}}
+  tracking_id: {{tracking_id}}
+}
+
+headers {
+  Content-Type: application/json
+  Prefer: {{prefer_representation_detailed}}
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+body:json {
+  [
+      {
+          "op": "replace",
+          "path": "/status",
+          "value": "CANCELLED"
+      }
+  ]
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Updates or cancels the tracking information for a PayPal order, by ID.
+  
+  <blockquote><b>Note:</b> For error handling and troubleshooting, see <a rel="noreferrer noopener nofollow" href="https://developer.paypal.com/docs/api/orders/v2/#orders_trackers_patch" target="_blank" url="https://developer.paypal.com/docs/api/orders/v2/#orders_trackers_patch">Update or cancel tracking information for an order</a>.</blockquote>
+}

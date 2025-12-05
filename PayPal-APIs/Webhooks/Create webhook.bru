@@ -1,0 +1,121 @@
+meta {
+  name: Create webhook
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/v1/notifications/webhooks
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+body:json {
+  {
+      "url": "{{webhook_url}}",
+      "event_types": [
+          {
+              "name": "*"
+          }
+      ]
+  }
+}
+
+script:pre-request {
+  // import functions from collection variables
+  eval(bru.getVar("paypal_postman_scripts"));
+  
+  // Create a temp endpoint on 'webhook.site' to register and receive webhooks events
+  // Please note this creates a public webhook endpoint.
+  // You may want to create a private endpoint by signing up on 'webhook.site' or their alternatives.
+  
+  if(this.PayPalPostmanUtils.isSandbox()) {  // avoid live data on public endpoint even by accident
+      const postRequest = {
+          url: 'https://webhook.site/token',
+          method: 'POST',
+          body: {
+              "default_status": 200,
+              "default_content": { "status": "success", "code": "200", "msg": "processing" },
+              "default_content_type": "application/json",
+              "timeout": 0
+          }
+      };
+  
+  //     pm.sendRequest(postRequest, (error, response) => {
+          var jsonData = response.json();
+          console.log(error ? error : jsonData);
+          bru.setVar("webhook_site_token", jsonData.uuid);
+          bru.setVar("webhook_url", "https://webhook.site/"+jsonData.uuid);
+      });
+  
+      //Check how many hooks already available.
+      //You can only have max 10 hooks. so remove few hooks if required.
+  //     pm.sendRequest({
+          url: bru.getVar("base_url") + '/v1/notifications/webhooks',
+          method: 'GET',
+          header: {
+              'Authorization': 'Bearer ' + bru.getVar("access_token")
+          }
+      }, (error, response) => {
+          if(response.code === 200) {
+              const threshold = 7;
+              const jsonData = response.json();
+              if(jsonData && jsonData.webhooks && jsonData.webhooks.length > threshold) {
+                  //Removing last few hooks.
+                  //Webhooks returned by list webhook endpoint are ordered by 'url' field. 
+                  //looking at the response json, there is no way to figure out webhooks creation date/time.
+                  //we might delete recently created webhook with this.
+                  const hooksToBeRemoved = jsonData.webhooks.slice(threshold);
+                  hooksToBeRemoved.forEach((webhook)=> {
+                      console.log("Deleting webhook : ", webhook);
+  //                     pm.sendRequest({
+                          url: bru.getVar('base_url') + '/v1/notifications/webhooks/' + webhook.id,
+                          method: 'DELETE',
+                          header: {
+                              'Authorization': 'Bearer ' + bru.getVar("access_token")
+                          }
+                      }, (error, response)=> {
+                          if(response.code === 204) {
+                              console.log("Webhook deleted ", webhook);
+                          }
+                      });
+                  });
+              }
+          } else {
+              console.error("Something went wrong while fetching current webhooks.", error, response);
+          }
+      });
+  }
+  
+}
+
+script:post-response {
+  test("Extract resource_id", function() {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('id');
+      bru.setVar("webhook_id", jsonData.id);
+      bru.setVar("webhook_url", jsonData.url);
+  });
+  var webhooksView = "https://webhook.site/#!/view/"+bru.getVar("webhook_site_token");
+  test("View Webhooks here "+webhooksView, function() {
+      console.log("View Webhooks here", webhooksView);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Subscribes your webhook listener to events. For testing create a sample webhook endpoint on [https://webhook.site/](https://webhook.site/) to receive webhook events sent by PayPal.
+}

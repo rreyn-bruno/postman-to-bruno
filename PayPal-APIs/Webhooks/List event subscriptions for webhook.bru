@@ -1,0 +1,33 @@
+meta {
+  name: List event subscriptions for webhook
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/v1/notifications/webhooks/:webhook_id/event-types
+  body: none
+  auth: inherit
+}
+
+params:path {
+  webhook_id: {{webhook_id}}
+}
+
+headers {
+  ~Content-Type: application/json
+  ~PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Lists event subscriptions for a webhook, by ID.
+}

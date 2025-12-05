@@ -1,0 +1,34 @@
+meta {
+  name: Delete external payment
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{base_url}}/v2/invoicing/invoices/:invoice_id/payments/:transaction_id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  invoice_id: {{invoice_id}}
+  transaction_id: {{invoice_payment_id}}
+}
+
+headers {
+  PayPal-Request-Id: {{$guid}}
+  ~Content-Type: application/json
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Deletes an external payment, by invoice ID and transaction ID.
+}

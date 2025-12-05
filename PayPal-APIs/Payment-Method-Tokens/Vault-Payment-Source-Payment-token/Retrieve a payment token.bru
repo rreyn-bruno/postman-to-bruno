@@ -1,0 +1,34 @@
+meta {
+  name: Retrieve a payment token
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/v3/vault/payment-tokens/:payment_token_id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  payment_token_id: {{payment_token_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+}
+
+script:post-response {
+  //skipping next requests
+  bru.runner.stopExecution();
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates a Payment Token from the given payment source and adds it to the Vault of the associated customer.
+}

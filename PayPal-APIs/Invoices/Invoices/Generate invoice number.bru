@@ -1,0 +1,36 @@
+meta {
+  name: Generate invoice number
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/v2/invoicing/generate-next-invoice-number
+  body: none
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+script:pre-request {
+  // first API in the folder enable delay subsequent APIs only during folder/collection run.
+  bru.setVar('delayed_run', 'true');
+}
+
+script:post-response {
+  test("Extract invoice_number", function() {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('invoice_number');
+      bru.setVar("draft_invoice_number", jsonData.invoice_number);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Generates the next invoice number that is available to the merchant. The next invoice number uses the prefix and suffix from the last invoice number and increments the number by one. For example, the next invoice number after `INVOICE-1234` is `INVOICE-1235`.
+}

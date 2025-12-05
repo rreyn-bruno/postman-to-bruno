@@ -1,0 +1,61 @@
+meta {
+  name: Revise plan or quantity of subscription
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/v1/billing/subscriptions/:subscription_id/revise
+  body: json
+  auth: inherit
+}
+
+params:path {
+  subscription_id: {{subscription_id}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "plan_id": "{{billing_plan_id}}",
+    "shipping_amount": {
+      "currency_code": "USD",
+      "value": "10.00"
+    },
+    "shipping_address": {
+      "name": {
+        "full_name": "John Doe"
+      },
+      "address": {
+        "address_line_1": "2211 N First Street",
+        "address_line_2": "Building 17",
+        "admin_area_2": "San Jose",
+        "admin_area_1": "CA",
+        "postal_code": "95131",
+        "country_code": "US"
+      }
+    },
+    "application_context": {
+      "brand_name": "walmart",
+      "locale": "en-US",
+      "shipping_preference": "SET_PROVIDED_ADDRESS",
+      "payment_method": {
+        "payer_selected": "PAYPAL",
+        "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
+      },
+      "return_url": "https://example.com/returnUrl",
+      "cancel_url": "https://example.com/cancelUrl"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Updates the quantity of the product or service in a subscription. You can also use this method to switch the plan and update the `shipping_amount`, `shipping_address` values for the subscription. This type of update requires the buyer's consent.
+}

@@ -1,0 +1,44 @@
+meta {
+  name: Capture authorized payment on subscription
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{base_url}}/v1/billing/subscriptions/:subscription_id/capture
+  body: json
+  auth: inherit
+}
+
+params:path {
+  subscription_id: {{subscription_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  Prefer: {{prefer_representation_detailed}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+body:json {
+  {
+      "note": "Charging as the balance reached the limit",
+      "capture_type": "OUTSTANDING_BALANCE",
+      "amount": {
+          "currency_code": "USD",
+          "value": "100"
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Captures an authorized payment from the subscriber on the subscription.
+}

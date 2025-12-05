@@ -1,0 +1,46 @@
+meta {
+  name: Confirm Payment Source
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/v2/checkout/orders/:order_id/confirm-payment-source
+  body: json
+  auth: inherit
+}
+
+params:path {
+  order_id: {{order_id}}
+}
+
+headers {
+  Content-Type: application/json
+  Prefer: {{prefer_representation_detailed}}
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+body:json {
+  {
+      "payment_source": {
+          "card": {
+              "number": "4111111111111111",
+              "expiry": "2035-12"
+          }
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Payer confirms their intent to pay for the the Order with the given payment source.
+  
+  <blockquote><b>Note:</b> For error handling and troubleshooting, see <a href="https://developer.paypal.com/docs/api/orders/v2/#orders_confirm" target="_blank" url="https://developer.paypal.com/docs/api/orders/v2/#orders_confirm">Confirm the Order</a>.</blockquote>
+}

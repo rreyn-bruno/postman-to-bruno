@@ -1,0 +1,40 @@
+meta {
+  name: Simulate webhook event
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{base_url}}/v1/notifications/simulate-event
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+body:json {
+  {
+      "event_type": "CUSTOMER.DISPUTE.CREATED",
+      "webhook_id": "{{webhook_id}}",
+      "url": "{{webhook_url}}",
+      "resource_version": "1.0"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Use the `/simulate-event` resource to use a sample payload to simulate a webhook event. The events that this call generates only serve to validate the connection to the listener URL and to show how webhook events look. <blockquote><strong>Note:</strong> You can also use the <a href="https://developer.paypal.com/developer/webhooksSimulator/">Webhooks simulator</a> to simulate webhook events.</blockquote>
+  
+  Simulates a webhook event. In the JSON request body, specify a sample payload.
+}

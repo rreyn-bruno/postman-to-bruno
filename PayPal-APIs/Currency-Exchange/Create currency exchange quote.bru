@@ -1,0 +1,57 @@
+meta {
+  name: Create currency exchange quote
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/v2/pricing/quote-exchange-rates
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+      "quote_items": [
+          {
+              "base_currency": "USD",
+              "base_amount": "20.00",
+              "quote_currency": "CAD"
+          }
+      ]
+  }
+}
+
+script:post-response {
+  var jsonData = res.getBody();
+  expect(jsonData).to.have.property('exchange_rate_quotes');
+  bru.setVar("fx_id", jsonData.exchange_rate_quotes[0].fx_id);
+  
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Generated from cURL: curl -X POST https://api.paypal.com/v2/pricing/quote-exchange-rates \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <ACCESS_TOKEN>" \
+    -d '{
+      "organization": "YOUR_ORGANIZATION_PATH",
+      "quote_items": [
+        {
+          "base_currency": "USD",
+          "base_amount": "100.00",
+          "quote_currency": "EUR",
+          "markup_percent": "1",
+          "fx_id": "PREVIOUS_FX_ID_IF_ANY"
+        }
+      ]
+    }'
+  
+}

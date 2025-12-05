@@ -1,0 +1,43 @@
+meta {
+  name: Update plan
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/v1/billing/plans/:billing_plan_id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  billing_plan_id: {{billing_plan_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  Prefer: {{prefer_representation_detailed}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+body:json {
+  [
+      {
+          "op": "replace",
+          "path": "/payment_preferences/payment_failure_threshold",
+          "value": 7
+      }
+  ]
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Updates a plan with the `CREATED` or `ACTIVE` status. For an `INACTIVE` plan, you can make only status updates.<br/>You can patch these attributes and objects:<table><thead><tr><th>Attribute or object</th><th>Operations</th></tr></thead><tbody><tr><td><code>description</code></td><td>replace</td></tr><tr><td><code>payment_preferences.auto_bill_outstanding</code></td><td>replace</td></tr><tr><td><code>taxes.percentage</code></td><td>replace</td></tr><tr><td><code>payment_preferences.payment_failure_threshold</code></td><td>replace</td></tr><tr><td><code>payment_preferences.setup_fee</code></td><td>replace</td></tr><tr><td><code>payment_preferences.setup_fee_failure_action</code></td><td>replace</td></tr><tr><td><code>name</code></td><td>replace</td></tr></tbody></table>
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Deny offer to resolve dispute
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{base_url}}/v1/customer/disputes/:dispute_id/deny-offer
+  body: json
+  auth: inherit
+}
+
+params:path {
+  dispute_id: {{dispute_id}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+      "note": "refund offer is very low."
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Denies an offer that the merchant proposes for a dispute, by ID.
+}

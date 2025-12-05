@@ -1,0 +1,86 @@
+meta {
+  name: Create a setup token
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/v3/vault/setup-tokens
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+}
+
+body:json {
+  {
+      "payment_source": {
+          "card": {
+              "number": "{{card_number}}",
+              "expiry": "2027-02",
+              "name": "John Doe",
+              "billing_address": {
+                  "address_line_1": "2211 N First Street",
+                  "address_line_2": "17.3.160",
+                  "admin_area_1": "CA",
+                  "admin_area_2": "San Jose",
+                  "postal_code": "95131",
+                  "country_code": "US"
+              }
+          }
+      }
+  }
+}
+
+script:pre-request {
+  // first API in the folder enable delay subsequent APIs only during folder/collection run.
+  bru.setVar('delayed_run', 'true');
+  //These test card numbers comes from here - https://developer.paypal.com/braintree/docs/guides/credit-cards/testing-go-live/java
+  var cards = [
+  '378282246310005',
+  '371449635398431',
+  '36259600000004',
+  '6011000991300009',
+  '3530111333300000',
+  '6304000000000000',
+  '5555555555554444',
+  '2223000048400011',
+  '4111111111111111',
+  '4005519200000004',
+  '4009348888881881',
+  '4012000033330026',
+  '4012000077777777',
+  '4012888888881881',
+  '4217651111111119',
+  '4500600000000061',
+  '6243030000000001',
+  '6221261111117766',
+  '6223164991230014'];
+  
+  bru.setVar("card_number", cards[Math.floor(Math.random() * 5)]);
+  
+}
+
+script:post-response {
+  var data = res.getBody();
+  test("Response has setup token id", function() {
+      expect(data).to.have.property('id');
+      bru.setVar("setup_token_id", data.id);
+  });
+  test("Response has customer token id", function() {
+      expect(data.customer).to.have.property('id');
+      bru.setVar("vault_customer_id", data.customer.id);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates a Setup Token from the given payment source and adds it to the Vault of the associated customer.
+}

@@ -1,0 +1,34 @@
+meta {
+  name: List available events
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/v1/notifications/webhooks-event-types
+  body: none
+  auth: inherit
+}
+
+headers {
+  ~Content-Type: application/json
+  ~PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+script:pre-request {
+  // first API in the folder enable delay subsequent APIs only during folder/collection run.
+  bru.setVar('delayed_run', 'true');
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Lists available events to which any webhook can subscribe. For a list of supported events, see [Webhook event names](https://developer.paypal.com/docs/api/notifications/webhooks/event-names/).
+}

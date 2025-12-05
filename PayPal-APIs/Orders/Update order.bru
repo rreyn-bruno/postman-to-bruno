@@ -1,0 +1,60 @@
+meta {
+  name: Update order
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/v2/checkout/orders/:order_id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  order_id: {{order_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~Prefer: return=minimal
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+body:json {
+  [
+      {
+          "op": "add",
+          "path": "/purchase_units/@reference_id=='default'/shipping/address",
+          "value": {
+              "address_line_1": "123 Townsend St",
+              "address_line_2": "Floor 6",
+              "admin_area_2": "San Francisco",
+              "admin_area_1": "CA",
+              "postal_code": "94107",
+              "country_code": "US"
+          }
+      },
+      {
+          "op": "add",
+          "path": "/purchase_units/@reference_id=='default'/invoice_id",
+          "value": "03012022-3303-01"
+      }
+  ]
+}
+
+script:post-response {
+  // skip payments APIs since there is no auth/capture transaction ID in postman environment
+  // pm.execution.setNextRequest("Generate invoice number"); // Generate invoice number
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Updates an order with a `CREATED` or `APPROVED` status. You cannot update an order with the `COMPLETED` status.<br/><br/>To make an update, you must provide a `reference_id`. If you omit this value with an order that contains only one purchase unit, PayPal sets the value to `default` which enables you to use the path: <code>"/purchase_units/@reference_id=='default'/{attribute-or-object}"</code>.<blockquote><strong>Note:</strong> For error handling and troubleshooting, see <a href="https://developer.paypal.com/api/rest/reference/orders/v2/errors/#link-patchorder">Orders v2 errors</a>.</blockquote>Patchable attributes or objects:<br/><br/><table><thead><th>Attribute</th><th>Op</th><th>Notes</th></thead><tbody><tr><td><code>intent</code></td><td>replace</td><td></td></tr><tr><td><code>payer</code></td><td>replace, add</td><td>Using replace op for <code>payer</code> will replace the whole <code>payer</code> object with the value sent in request.</td></tr><tr><td><code>purchase_units</code></td><td>replace, add</td><td></td></tr><tr><td><code>purchase_units[].custom_id</code></td><td>replace, add, remove</td><td></td></tr><tr><td><code>purchase_units[].description</code></td><td>replace, add, remove</td><td></td></tr><tr><td><code>purchase_units[].payee.email</code></td><td>replace</td><td></td></tr><tr><td><code>purchase_units[].shipping.name</code></td><td>replace, add</td><td></td></tr><tr><td><code>purchase_units[].shipping.address</code></td><td>replace, add</td><td></td></tr><tr><td><code>purchase_units[].shipping.type</code></td><td>replace, add</td><td></td></tr><tr><td><code>purchase_units[].soft_descriptor</code></td><td>replace, remove</td><td></td></tr><tr><td><code>purchase_units[].amount</code></td><td>replace</td><td></td></tr><tr><td><code>purchase_units[].invoice_id</code></td><td>replace, add, remove</td><td></td></tr><tr><td><code>purchase_units[].payment_instruction</code></td><td>replace</td><td></td></tr><tr><td><code>purchase_units[].payment_instruction.disbursement_mode</code></td><td>replace</td><td>By default, <code>disbursement_mode</code> is <code>INSTANT</code>.</td></tr><tr><td><code>purchase_units[].payment_instruction.platform_fees</code></td><td>replace, add, remove</td><td></td></tr></tbody></table>
+}

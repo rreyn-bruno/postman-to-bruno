@@ -1,0 +1,27 @@
+meta {
+  name: Show captured payment details
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/v2/payments/captures/:capture_id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  capture_id: {{capture_id}}
+}
+
+headers {
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Shows details for a captured payment, by ID.
+}

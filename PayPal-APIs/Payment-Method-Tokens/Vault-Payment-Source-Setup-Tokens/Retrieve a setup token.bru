@@ -1,0 +1,29 @@
+meta {
+  name: Retrieve a setup token
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/v3/vault/setup-tokens/:setup_token_id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  setup_token_id: {{setup_token_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Returns a readable representation of temporarily vaulted payment source associated with the setup token id.
+}

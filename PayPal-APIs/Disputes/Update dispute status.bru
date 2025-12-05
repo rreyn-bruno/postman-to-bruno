@@ -1,0 +1,29 @@
+meta {
+  name: Update dispute status
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base_url}}/v1/customer/disputes/:dispute_id/require-evidence
+  body: json
+  auth: inherit
+}
+
+params:path {
+  dispute_id: {{dispute_id}}
+}
+
+body:json {
+  {
+      "action": "BUYER_EVIDENCE"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  <blockquote><strong>Important:</strong> This method is for sandbox use only.</blockquote> Updates the status of a dispute, by ID, from <code>UNDER_REVIEW</code> to either:<ul><li><code>WAITING_FOR_BUYER_RESPONSE</code></li><li><code>WAITING_FOR_SELLER_RESPONSE</code></li></ul>This status change enables either the customer or merchant to submit evidence for the dispute. To make this call, the dispute <code>status</code> must be <code>UNDER_REVIEW</code>. Specify an <code>action</code> value in the JSON request body to indicate whether the status change enables the customer or merchant to submit evidence:<table><thead><tr align="left"><th>If <code>action</code> is</th><th>The <code>status</code> updates to</th></tr></thead><tbody><tr><td><code>BUYER_EVIDENCE</code></td><td> <code>WAITING_FOR_BUYER_RESPONSE</code></td></tr><tr><td><code>SELLER_EVIDENCE</code></td><td> <code>WAITING_FOR_SELLER_RESPONSE</code></td></tr></tbody></table>
+}

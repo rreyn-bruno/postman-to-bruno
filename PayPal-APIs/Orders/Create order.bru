@@ -1,0 +1,75 @@
+meta {
+  name: Create order
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/v2/checkout/orders
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Prefer: {{prefer_representation_detailed}}
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+body:json {
+  {
+      "intent": "{{order_intent}}",
+      "payment_source": {
+          "paypal": {
+              "experience_context": {
+                  "return_url": "https://developer.paypal.com",
+                  "cancel_url": "https://www.bing.com",
+                  "user_action": "PAY_NOW"
+              }
+          }
+      },
+      "purchase_units": [
+          {
+              "amount": {
+                  "currency_code": "USD",
+                  "value": "100.00"
+              }
+          }
+      ]
+  }
+}
+
+script:pre-request {
+  // first API in the folder enable delay subsequent APIs only during folder/collection run.
+  bru.setVar('delayed_run', 'true');
+}
+
+script:post-response {
+  test("Extract resource_id", function() {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('id');
+      bru.setVar("order_id", jsonData.id);
+  
+      if (jsonData.purchase_units && jsonData.purchase_units[0] && jsonData.purchase_units[0].payments) {
+          var payments = jsonData.purchase_units && jsonData.purchase_units[0] && jsonData.purchase_units[0].payments;
+          if (payments.authorizations && payments.authorizations[0]) {
+              bru.setVar("authorization_id", payments.authorizations[0].id);
+          }
+          if (payments.captures && payments.captures[0]) {
+              bru.setVar("capture_id", payments.captures[0].id);
+          }
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates an order.<blockquote><strong>Note:</strong> For error handling and troubleshooting, see <a href="https://developer.paypal.com/api/rest/reference/orders/v2/errors/#create-order">Orders v2 errors</a>.</blockquote>
+}

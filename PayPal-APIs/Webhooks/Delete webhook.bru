@@ -1,0 +1,39 @@
+meta {
+  name: Delete webhook
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{base_url}}/v1/notifications/webhooks/:webhook_id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  webhook_id: {{webhook_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+script:post-response {
+  // sip over Shipment Tracking APIs since they need a valid transaction which cannot be created without buyer approval flow.
+  // pm.execution.setNextRequest("List transactions");
+  
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Deletes a webhook, by ID.
+}

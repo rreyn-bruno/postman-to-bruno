@@ -1,0 +1,48 @@
+meta {
+  name: Show payout batch details
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/v1/payments/payouts/:payout_batch_id
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~fields: amet commodo incididunt aute minim
+  ~page: 1
+  ~page_size: 39318774
+  ~total_required: false
+}
+
+params:path {
+  payout_batch_id: {{payout_batch_id}}
+}
+
+headers {
+  ~Content-Type: application/json
+  ~PayPal-Request-Id: {{$guid}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_detailed}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+script:post-response {
+  test("Extract resource_id", function() {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('items');
+      bru.setVar("payout_item_id", jsonData.items[0].payout_item_id);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Shows the latest status of a batch payout. Includes the transaction status and other data for individual payout items.
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Make offer to resolve dispute
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{base_url}}/v1/customer/disputes/:dispute_id/make-offer
+  body: json
+  auth: inherit
+}
+
+params:path {
+  dispute_id: {{dispute_id}}
+}
+
+body:json {
+  {
+      "note": "Offer refund with replacement item.",
+      "offer_amount": {
+          "currency_code": "USD",
+          "value": "23"
+      },
+      "offer_type": "REFUND_WITH_REPLACEMENT"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Makes an offer to the other party to resolve a dispute, by ID. To make this call, the stage in the dispute lifecycle must be `INQUIRY`. If the customer accepts the offer, PayPal automatically makes a refund. Allowed offer_type values for the request is available in dispute details <a href="https://developer.paypal.com/api/customer-disputes/v1/#definition-allowed_response_options">allowed response options</a> object.
+}

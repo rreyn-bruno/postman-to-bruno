@@ -1,0 +1,275 @@
+# Postman to Bruno Converter - Standalone Solution
+
+## Project Overview
+
+Create a standalone Postman to Bruno collection converter that can handle enterprise-scale migrations (10K+ collections) without requiring NPM installation or dependency management.
+
+## Background & Requirements
+
+**Client Need**: VISA wants to automate Postman to Bruno conversion for 10K+ collections. They've identified issues with the existing NPM-based bruno-converter package and need a standalone solution that works in enterprise environments without NPM dependencies.
+
+**Key Requirements**:
+- Standalone package (no NPM installation required)
+- Batch processing capability for thousands of collections
+- Generate actual `.bru` file structure (not JSON)
+- Work in air-gapped/restricted enterprise environments
+- Handle complex Postman features (environments, scripts, auth, etc.)
+
+## Technical Approach
+
+### Repository Structure
+```
+postman-to-bruno-converter/
+├── src/
+│   ├── converters/
+│   │   ├── collection-converter.js     # Main conversion logic
+│   │   ├── request-converter.js        # Individual request conversion
+│   │   ├── environment-converter.js    # Environment variables
+│   │   ├── auth-converter.js          # Authentication schemes
+│   │   └── script-converter.js        # Pre-request/test scripts
+│   ├── generators/
+│   │   ├── bru-file-generator.js      # Generate .bru file content
+│   │   ├── folder-structure.js       # Create folder hierarchy
+│   │   └── environment-generator.js   # Bruno environment files
+│   └── utils/
+│       ├── file-utils.js              # File system operations
+│       ├── sanitizer.js               # Name sanitization
+│       └── validator.js               # Input validation
+├── cli.js                             # Command line interface
+├── batch-convert.js                   # Batch processing script
+├── package.json                       # Minimal dependencies only
+└── README.md                          # Usage documentation
+```
+
+### Core Conversion Logic
+
+#### 1. Collection Converter (`src/converters/collection-converter.js`)
+```javascript
+function convertPostmanToBruno(postmanCollection, outputDir) {
+  // Create base directory structure
+  createBrunoStructure(outputDir);
+  
+  // Convert collection metadata
+  generateBrunoJson(postmanCollection.info, outputDir);
+  
+  // Process folders and requests
+  processItems(postmanCollection.item, outputDir);
+  
+  // Convert environments if present
+  if (postmanCollection.variable) {
+    convertEnvironments(postmanCollection.variable, outputDir);
+  }
+}
+```
+
+#### 2. Request Converter (`src/converters/request-converter.js`)
+```javascript
+function convertRequest(postmanRequest) {
+  return {
+    meta: extractMeta(postmanRequest),
+    method: postmanRequest.request.method.toLowerCase(),
+    url: convertUrl(postmanRequest.request.url),
+    headers: convertHeaders(postmanRequest.request.header),
+    body: convertBody(postmanRequest.request.body),
+    auth: convertAuth(postmanRequest.request.auth),
+    scripts: convertScripts(postmanRequest.event)
+  };
+}
+```
+
+#### 3. .bru File Generator (`src/generators/bru-file-generator.js`)
+```javascript
+function generateBruFile(convertedRequest) {
+  let bruContent = `meta {
+  name: ${convertedRequest.meta.name}
+  type: http
+  seq: ${convertedRequest.meta.seq}
+}
+
+${convertedRequest.method} {
+  url: ${convertedRequest.url}
+}`;
+
+  if (convertedRequest.headers) {
+    bruContent += `\n\nheaders {
+${convertedRequest.headers}
+}`;
+  }
+
+  if (convertedRequest.body) {
+    bruContent += `\n\nbody:${convertedRequest.body.type} {
+${convertedRequest.body.content}
+}`;
+  }
+
+  if (convertedRequest.auth) {
+    bruContent += `\n\nauth:${convertedRequest.auth.type} {
+${convertedRequest.auth.config}
+}`;
+  }
+
+  if (convertedRequest.scripts.preRequest) {
+    bruContent += `\n\nscript:pre-request {
+${convertedRequest.scripts.preRequest}
+}`;
+  }
+
+  if (convertedRequest.scripts.test) {
+    bruContent += `\n\nscript:post-response {
+${convertedRequest.scripts.test}
+}`;
+  }
+
+  return bruContent;
+}
+```
+
+### CLI Interface (`cli.js`)
+```javascript
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+const { convertPostmanToBruno } = require('./src/converters/collection-converter');
+
+function main() {
+  const args = process.argv.slice(2);
+  
+  if (args.length < 1) {
+    console.log('Usage: node cli.js <postman-collection.json> [output-directory]');
+    process.exit(1);
+  }
+
+  const inputFile = args[0];
+  const outputDir = args[1] || './bruno-collection';
+
+  try {
+    const postmanCollection = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+    convertPostmanToBruno(postmanCollection, outputDir);
+    console.log(`✅ Successfully converted to Bruno collection in ${outputDir}`);
+  } catch (error) {
+    console.error('❌ Conversion failed:', error.message);
+    process.exit(1);
+  }
+}
+
+main();
+```
+
+### Batch Processing (`batch-convert.js`)
+```javascript
+const fs = require('fs');
+const path = require('path');
+const { convertPostmanToBruno } = require('./src/converters/collection-converter');
+
+function batchConvert(inputDir, outputDir) {
+  const files = fs.readdirSync(inputDir).filter(file => file.endsWith('.json'));
+  
+  console.log(`Found ${files.length} Postman collections to convert...`);
+  
+  files.forEach((file, index) => {
+    const inputPath = path.join(inputDir, file);
+    const collectionName = path.basename(file, '.json');
+    const outputPath = path.join(outputDir, collectionName);
+    
+    try {
+      const postmanCollection = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+      convertPostmanToBruno(postmanCollection, outputPath);
+      console.log(`✅ [${index + 1}/${files.length}] Converted ${collectionName}`);
+    } catch (error) {
+      console.error(`❌ [${index + 1}/${files.length}] Failed to convert ${collectionName}:`, error.message);
+    }
+  });
+}
+
+// Usage: node batch-convert.js ./postman-collections ./bruno-collections
+const inputDir = process.argv[2] || './postman-collections';
+const outputDir = process.argv[3] || './bruno-collections';
+
+batchConvert(inputDir, outputDir);
+```
+
+## Key Features to Implement
+
+### 1. Complete Postman Feature Support
+- **Requests**: All HTTP methods, URLs with variables
+- **Headers**: Static and dynamic headers
+- **Body**: JSON, form-data, raw, binary
+- **Authentication**: Bearer, Basic, API Key, OAuth 2.0
+- **Scripts**: Pre-request scripts and tests (convert to Bruno format)
+- **Variables**: Collection and environment variables
+- **Folders**: Nested folder structures
+
+### 2. Bruno-Specific Output
+- **File Structure**: Individual `.bru` files in organized folders
+- **bruno.json**: Collection metadata file
+- **Environments**: Separate environment files
+- **Folder Organization**: Maintain Postman folder hierarchy
+
+### 3. Enterprise Features
+- **Error Handling**: Robust error reporting and recovery
+- **Validation**: Input validation and format checking
+- **Logging**: Detailed conversion logs for debugging
+- **Progress Tracking**: Progress indicators for large batches
+
+## Usage Examples
+
+### Single Collection
+```bash
+# Clone the repository
+git clone <repo-url> postman-to-bruno-converter
+cd postman-to-bruno-converter
+
+# Convert single collection
+node cli.js my-collection.json ./output/my-collection
+
+# Result: ./output/my-collection/ contains full Bruno collection
+```
+
+### Batch Processing (10K+ Collections)
+```bash
+# Organize Postman collections in input directory
+mkdir postman-collections
+# Copy all .json files to postman-collections/
+
+# Run batch conversion
+node batch-convert.js ./postman-collections ./bruno-collections
+
+# Result: ./bruno-collections/ contains all converted collections
+```
+
+### Integration Script
+```bash
+#!/bin/bash
+# Enterprise deployment script
+
+# Clone converter
+git clone <repo-url> /opt/postman-to-bruno-converter
+cd /opt/postman-to-bruno-converter
+
+# Process collections from network share
+node batch-convert.js /mnt/postman-exports /mnt/bruno-collections
+
+# Verify results
+echo "Conversion complete. Processed $(ls /mnt/bruno-collections | wc -l) collections"
+```
+
+## Deliverables
+
+1. **Complete Repository**: Self-contained converter with all source code
+2. **Documentation**: Comprehensive README with usage examples
+3. **Test Suite**: Validation tests with sample Postman collections
+4. **Enterprise Scripts**: Batch processing and deployment scripts
+5. **Migration Guide**: Step-by-step conversion process documentation
+
+## Success Criteria
+
+- ✅ Converts complex Postman collections to valid Bruno format
+- ✅ Handles 10K+ collections efficiently
+- ✅ No NPM installation required
+- ✅ Works in air-gapped environments
+- ✅ Preserves all Postman functionality in Bruno equivalent
+- ✅ Provides clear error reporting and logging
+- ✅ Includes comprehensive documentation and examples
+
+This standalone solution will give VISA complete control over their conversion process while meeting their scale and security requirements.

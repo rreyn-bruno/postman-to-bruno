@@ -1,0 +1,31 @@
+meta {
+  name: Terminate access_token
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/v1/oauth2/token/terminate
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  token: {{access_token}}
+  token_type_hint: ACCESS_TOKEN
+  ~grant_type: client_credentials
+  ~grant_type: refresh_token
+  ~refresh_token: {{refresh_token}}
+  ~grant_type: authorization_code
+  ~code: {{authorization_code}}
+}
+
+script:post-response {
+  test("clear cached access_token", function () {
+      bru.deleteVar('access_token');
+  });
+}
+
+settings {
+  encodeUrl: true
+}

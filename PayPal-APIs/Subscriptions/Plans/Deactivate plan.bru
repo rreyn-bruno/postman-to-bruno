@@ -1,0 +1,33 @@
+meta {
+  name: Deactivate plan
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/v1/billing/plans/:billing_plan_id/deactivate
+  body: none
+  auth: inherit
+}
+
+params:path {
+  billing_plan_id: {{billing_plan_id}}
+}
+
+headers {
+  PayPal-Request-Id: {{$guid}}
+  Prefer: {{prefer_representation_detailed}}
+  ~Content-Type: application/json
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_minimal}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Deactivates a plan, by ID.
+}

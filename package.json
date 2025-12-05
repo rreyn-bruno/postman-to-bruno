@@ -1,0 +1,31 @@
+{
+  "name": "postman-to-bruno-converter",
+  "version": "1.0.0",
+  "description": "Standalone Postman to Bruno collection converter for enterprise-scale migrations",
+  "main": "src/index.js",
+  "bin": {
+    "postman-to-bruno": "./bin/postman-to-bruno",
+    "postman-to-bruno-batch": "./bin/postman-to-bruno-batch"
+  },
+  "scripts": {
+    "convert": "node cli.js",
+    "batch": "node batch-convert.js",
+    "test": "node test/run-tests.js"
+  },
+  "keywords": [
+    "postman",
+    "bruno",
+    "api",
+    "converter",
+    "migration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+

@@ -1,0 +1,55 @@
+meta {
+  name: Capture authorized payment
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/v2/payments/authorizations/:authorization_id/capture
+  body: json
+  auth: inherit
+}
+
+params:path {
+  authorization_id: {{authorization_id}}
+}
+
+headers {
+  Content-Type: application/json
+  PayPal-Request-Id: {{$guid}}
+  Prefer: {{prefer_representation_detailed}}
+  ~PayPal-Client-Metadata-Id: {{paypal_client_metadata_Id}}
+  ~PayPal-Partner-Attribution-Id: {{paypal_partner_attribution_id}}
+  ~PayPal-Auth-Assertion: {{paypal_auth_assertion}}
+  ~Prefer: {{prefer_representation_minimal}}
+  ~PayPal-Mock-Response: { "mock_application_codes": "{{mock_issue}}" }
+}
+
+body:json {
+  {
+      "amount": {
+          "value": "60",
+          "currency_code": "USD"
+      },
+      "invoice_id": "{{$timestamp}}",
+      "final_capture": true,
+      "note_to_payer": "If the ordered color is not available, we will substitute with a different color free of charge.",
+      "soft_descriptor": "Bob's Custom Sweaters"
+  }
+}
+
+script:post-response {
+  test("Extract resource id", function() {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('id');
+      bru.setVar("capture_id", jsonData.id);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Captures an authorized payment, by ID.
+}
