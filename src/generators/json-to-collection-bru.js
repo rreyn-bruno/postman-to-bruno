@@ -3,7 +3,7 @@
  * Adapted from bruno-lang/v2/src/jsonToCollectionBru.js
  */
 
-const _ = require('lodash');
+const _ = require('../vendor/lodash');
 const { indentString, getValueString, getKeyString } = require('../utils/bru-lang-utils');
 
 const enabled = (items = []) => items.filter((item) => item.enabled);

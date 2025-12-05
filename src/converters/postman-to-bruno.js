@@ -3,7 +3,7 @@
  * Adapted from bruno-converters/src/postman/postman-to-bruno.js
  */
 
-const _ = require('lodash');
+const _ = require('../vendor/lodash');
 const postmanTranslation = require('./postman-translations');
 const { uuid } = require('../utils/common');
 

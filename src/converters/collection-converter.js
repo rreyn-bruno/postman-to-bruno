@@ -3,7 +3,7 @@
  * Converts Postman collections to Bruno format
  */
 
-const _ = require('lodash');
+const _ = require('../vendor/lodash');
 const { uuid } = require('../utils/common');
 const {
   AUTH_TYPES,

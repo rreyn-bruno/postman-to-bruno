@@ -21,9 +21,6 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "lodash": "^4.17.21"
-  },
   "engines": {
     "node": ">=14.0.0"
   }

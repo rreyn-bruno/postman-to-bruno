@@ -3,7 +3,7 @@
  * Vendored and adapted from bruno-lang/v2/src/jsonToBru.js
  */
 
-const _ = require('lodash');
+const _ = require('../vendor/lodash');
 const { indentString, getValueString, getKeyString, getValueUrl } = require('../utils/bru-lang-utils');
 const jsonToExampleBru = require('./json-to-example-bru');
 

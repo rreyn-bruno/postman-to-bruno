@@ -3,7 +3,7 @@
  * Standalone solution for enterprise-scale Postman to Bruno migrations
  */
 
-const _ = require('lodash');
+const _ = require('./vendor/lodash');
 const { uuid } = require('./utils/common');
 const {
   transformDescription,
