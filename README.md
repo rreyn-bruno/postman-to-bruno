@@ -16,9 +16,6 @@ A standalone, enterprise-grade converter for migrating Postman collections to [B
 git clone https://github.com/rreyn-bruno/postman-to-bruno.git
 cd postman-to-bruno
 
-# Install dependencies
-npm install
-
 # Convert a single collection
 node bin/postman-to-bruno.js my-collection.postman_collection.json
 
